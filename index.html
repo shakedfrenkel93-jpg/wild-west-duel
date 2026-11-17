@@ -527,6 +527,41 @@ html, body { background: #2B1A0E; }
 }
 @media (prefers-reduced-motion: reduce) { .reveal { animation: none; } .poster { transform: none; } }
 
+/* ===== phones: sizes come from the visible game area (#app), not from the browser's vh/vw units,
+   which on an iPhone also count the space under the toolbars ===== */
+#app { container-type: size; }
+.cam { aspect-ratio: var(--ar, 1.333); }
+/* the camera box keeps to its share of the screen whatever shape the camera picture has (upright phones send a tall one) */
+.cam.stage { width: min(46vw, calc(84vh * var(--ar, 1.333))); width: min(46cqw, calc(84cqh * var(--ar, 1.333))); }
+.cam.corner { width: min(clamp(104px, 19vw, 250px), calc(24vh * var(--ar, 1.333))); width: min(clamp(104px, 19cqw, 250px), calc(24cqh * var(--ar, 1.333))); }
+.card, .poster { max-height: 94vh; max-height: 94cqh; overflow-y: auto; }
+.cal-setup { margin: 0 0 .5em; font: 700 calc(var(--u) * 1.2)/1.3 var(--ui); }
+.cal-rotate { display: none; margin: 0 0 .5em; font: 700 calc(var(--u) * 1.05)/1.3 var(--ui); color: var(--coral); }
+@media (orientation: portrait) {
+  /* camera on top (at most 38% of the height), card underneath (at most 56%) */
+  .cam.stage { top: 2vh; top: 2cqh; width: min(92vw, calc(38vh * var(--ar, 1.333))); width: min(92cqw, calc(38cqh * var(--ar, 1.333))); }
+  .scr-stage { padding: 8px; }
+  .scr-stage .card { max-height: 57vh; max-height: 57cqh; padding-block: calc(var(--u) * 1.3) calc(var(--u) * 1.1); }
+  .buttons-mode .scr-stage .card { max-height: 70cqh; }
+  .cal-rotate { display: block; }
+  .optcheck { display: none; }
+  .scr-stage .topbar { margin-bottom: calc(var(--u) * .3); }
+  .scr-stage .card-actions { margin-top: .2em; }
+  /* title and character choice: the paper panel is only as tall as its content, the scene stays visible under it */
+  .scr-title, [dir="rtl"] .scr-title { background: none; }
+  .title-panel, .scr-select .title-panel { align-self: flex-start; width: 100%; padding-bottom: calc(var(--u) * 3.2);
+    background: linear-gradient(180deg, rgba(233,214,168,.97) 0, rgba(233,214,168,.95) calc(100% - 34px), rgba(233,214,168,0) 100%); }
+  .poster { width: min(86vw, 380px); width: min(86cqw, 380px); }
+  .poster-face { width: min(62%, 26vh); width: min(62%, 26cqh); }
+  .poster-wanted { font-size: clamp(30px, 8cqh, 64px); }
+}
+@media (orientation: landscape) and (max-height: 440px) {
+  .scr-stage .card { padding-block: calc(var(--u) * 1.1) calc(var(--u) * .9); }
+  .cal-setup { font-size: calc(var(--u) * 1.05); margin-bottom: .3em; }
+  .optcheck { display: none; }
+}
+
+
 </style>
 </head>
 <body>
@@ -680,6 +715,8 @@ html, body { background: #2B1A0E; }
       </div>
 
       <div class="cal-step" data-step="position">
+        <p class="cal-setup" data-i18n="pos.setup"></p>
+        <p class="cal-rotate" data-i18n="pos.rotate"></p>
         <div class="light" id="calLight"><i></i><b id="calState"></b></div>
         <div class="chips" id="posChips">
           <span data-chip="head"><svg><use href="#i-check"/></svg><b data-i18n="chip.head"></b></span>
@@ -1582,7 +1619,7 @@ window.WW_FILM={cols:4,rows:2,fw:800,fh:450,sheets:["film_0","film_1"],n:16};
   function oppMetrics(o, L, pose) {
     var q = posePic(o.id, pose || o.pose || 'idle'); if (!q) return null;
     var h = L.oppH * (o.scale || 1) * (ART[o.id].ht || 1) * q.p.k, w = h * q.p.w / q.p.h;
-    return { q: q, x: o.x * W, y: L.feet, w: w, h: h, left: o.x * W - q.p.ax * w };
+    return { q: q, x: o.x * W, y: o.feet != null ? H * o.feet : L.feet, w: w, h: h, left: o.x * W - q.p.ax * w };
   }
   // Where a point of the opponent's *standing* picture lands on screen (fx, fy in 0..1 of that picture).
   R.oppPoint = function (o, fxx, fyy, pose) {
@@ -2038,7 +2075,8 @@ window.WW_FILM={cols:4,rows:2,fw:800,fh:450,sheets:["film_0","film_1"],n:16};
   };
 
   Object.assign(T.en, {
-    'ver': 'Version 3.3',
+    'ver': 'Version 3.4',
+    'pos.setup': 'Prop the device up and take two big steps back, until the camera sees you from head to hips.', 'pos.rotate': 'Lying sideways, the camera sees wider.',
     'title': 'Wild West Gesture Duel', 'subtitle': 'One, two… now! Reload, shield or shoot, all at the same moment.',
     'select.title': 'Who are you?', 'map.title': 'Town map', 'intro.go': 'Start the duel', 'intro.speed': 'Tempo', 'intro.shield': 'Shield', 'intro.smart': 'Cunning',
     'wanted': 'WANTED', 'reward': 'Reward', 'boss.tag': 'Duels without counting',
@@ -2059,7 +2097,8 @@ window.WW_FILM={cols:4,rows:2,fw:800,fh:450,sheets:["film_0","film_1"],n:16};
     'bio.max': 'Shows up at midnight and never waits for the count.'
   });
   Object.assign(T.he, {
-    'ver': 'גרסה 3.3',
+    'ver': 'גרסה 3.4',
+    'pos.setup': 'משעינים את המכשיר על משהו יציב ומתרחקים שני צעדים גדולים, עד שהמצלמה רואה מהראש עד המותניים.', 'pos.rotate': 'כשהמכשיר שוכב לרוחב, המצלמה רואה רחב יותר.',
     'title': 'דו-קרב במערב הפרוע', 'subtitle': 'אחת, שתיים… עכשיו! טוענים, מתגוננים או יורים, כולם באותו רגע.',
     'select.title': 'מי אתם?', 'map.title': 'מפת העיירה', 'intro.go': 'מתחילים דו-קרב', 'intro.speed': 'קצב', 'intro.shield': 'מגן', 'intro.smart': 'ערמומיות',
     'wanted': 'מבוקש', 'reward': 'פרס', 'boss.tag': 'נלחם בלי ספירה',
@@ -2157,14 +2196,22 @@ window.WW_FILM={cols:4,rows:2,fw:800,fh:450,sheets:["film_0","film_1"],n:16};
     if (name !== 'play') { ['scrPause', 'scrLost', 'scrCam', 'scrConfirm', 'scrRules'].forEach(function (id) { $(id).hidden = true; }); hideBanner(); S.paused = false; S.lost = false; S.resume = null; S.camIssue = false; S.confirm = null; S.rules = null; clearTimeout(S.rulesAuto); stopCamRetry(); }
     $('beats').hidden = true; $('reveal').hidden = true; S.pv.pose = 'gun';
     S.pv.show = (name === 'play');
+    keepAwake(S.mode === 'camera' && name !== 'menu' && name !== 'select');
     if (name === 'menu' || name === 'select') { S.opp = titleOpp(-9); R.setScene('street'); R.clearFx(); }
     else if (name === 'calib' || name === 'map') S.opp = null;
     $('camCount').textContent = '';
     if (S.kbd && FOCUS[name]) { try { $(FOCUS[name]).focus({ preventScroll: true }); } catch (e) { /* fine */ } }   // keyboard players land on the main button
   }
   function titleX() { return isPortrait() ? 0.5 : (S.lang === 'he' ? 0.2 : 0.8); }
-  function titleOpp(popAt) { return { id: S.playerId, x: titleX(), scale: isPortrait() ? 0.8 : 1, pose: 'idle', poseAt: popAt, mode: 'idle', prog: 0, hitAt: -9, cheerAt: null }; }
+  function titleOpp(popAt) { return { id: S.playerId, x: titleX(), scale: isPortrait() ? 0.86 : 1, feet: isPortrait() ? 0.955 : null, pose: 'idle', poseAt: popAt, mode: 'idle', prog: 0, hitAt: -9, cheerAt: null }; }
 
+  var wake = null;
+  function keepAwake(on) {
+    try {
+      if (on) { if (!wake && navigator.wakeLock) navigator.wakeLock.request('screen').then(function (w) { wake = w; w.addEventListener('release', function () { if (wake === w) wake = null; }); }).catch(function () { /* not allowed right now: fine */ }); }
+      else if (wake) { var w0 = wake; wake = null; w0.release().catch(function () { /* already gone */ }); }
+    } catch (e) { /* no wake lock on this browser */ }
+  }
   function goMenu() { stopMapAuto(); Tracker.closeCamera(); S.mode = null; S.duel = null; S.timers = []; show('menu'); paintMenu(); }
   function goSelect() { show('select'); paintSelect(); }
   function leaveSelect() {
@@ -2269,7 +2316,7 @@ window.WW_FILM={cols:4,rows:2,fw:800,fh:450,sheets:["film_0","film_1"],n:16};
       }).then(function () {
         return new Promise(function (res) { var n = 0; (function wait() { if (self.video.videoWidth || n++ > 100) res(); else setTimeout(wait, 50); })(); });
       }).then(function () {
-        if (self.video.videoWidth) { self.aspect = self.video.videoWidth / self.video.videoHeight; $('cam').style.aspectRatio = String(self.aspect); }
+        if (self.video.videoWidth) { self.aspect = self.video.videoWidth / self.video.videoHeight; $('cam').style.aspectRatio = String(self.aspect); $('cam').style.setProperty('--ar', String(self.aspect)); }
         self.lastVT = -1; self.lastPose = null; self.lastFrameAt = performance.now();
         stat('camOk'); self.setState('connected');
         return self.listDevices();
@@ -3004,7 +3051,7 @@ window.WW_FILM={cols:4,rows:2,fw:800,fh:450,sheets:["film_0","film_1"],n:16};
   window.addEventListener('keyup', function (e) { var k = (e.key || '').toLowerCase(); if (KEYS[k] && S.mode === 'buttons') Pad.press(KEYS[k], false); });
   window.addEventListener('pointerdown', function () { S.kbd = false; }, true);
   var camTaps = 0; $('cam').addEventListener('click', function () { if (++camTaps % 3 === 0) setDebug(!S.debug); });
-  document.addEventListener('visibilitychange', function () { if (document.hidden && S.screen === 'play' && !S.paused) pause(); });
+  document.addEventListener('visibilitychange', function () { if (document.hidden && S.screen === 'play' && !S.paused) pause(); if (!document.hidden) keepAwake(S.mode === 'camera' && S.screen !== 'menu' && S.screen !== 'select'); });
   window.addEventListener('pagehide', function () { Tracker.closeCamera(true); });               // never leave the camera on behind a closed page
   window.addEventListener('resize', function () { R.resize(); if (S.screen === 'menu' || S.screen === 'select') S.opp = titleOpp(-9); if (S.screen === 'map') paintMap(); });
   window.addEventListener('orientationchange', function () { setTimeout(function () { R.resize(); if (S.screen === 'map') paintMap(); }, 250); });
