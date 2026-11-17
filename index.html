@@ -485,6 +485,9 @@ html, body { background: #2B1A0E; }
 
 .card, .poster { padding-inline: max(calc(var(--u) * 2.4), 8.5%); }
 .map-score span { background: rgba(233,214,168,.88); padding: 2px 8px; border-radius: 3px; }
+/* camera on the left, card on the right, in every language (the card keeps its own text direction) */
+.scr-stage { direction: ltr; }
+[dir="rtl"] .scr-stage .card { direction: rtl; }
 /* the count sits beside the opponent, never on top of them */
 .banner.beat { direction: ltr; align-items: flex-start; padding: 0 0 6vh 11vw; }    /* always on the side away from the player's hand */
 .banner.beat .banner-big { font-size: clamp(64px, 30vmin, 240px); min-width: 1.2em; unicode-bidi: plaintext; }
